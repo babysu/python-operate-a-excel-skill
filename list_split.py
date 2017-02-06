@@ -5,6 +5,7 @@ import xlrd,xlwt
 
 STRING = '部门'
 TITLE_ROW = 0
+
 def split_file(filename):
 	workbook = xlrd.open_workbook(filename)#
 	sheet = workbook.sheet_by_index(1) #通过index选择你需要分割的那个sheet	
@@ -15,7 +16,11 @@ def split_file(filename):
 	all= sheet.col_values(index)
 	department = list(set(all))
 	department.remove(STRING) #删除Title这一个元素得到的是所有的部门了
-	#print(department)
+	
+	
+	department=[ dep.split('-')[0] for dep in department]
+	department=set(department)
+	
 	wb_result=xlwt.Workbook()
 	for sub_dt in department:
 		row_i =0 
@@ -24,17 +29,18 @@ def split_file(filename):
 			sheet_subdt.write(row_i,j,sheet.row_values(TITLE_ROW)[j])
 		row_i=row_i+1
 		for i in range(1,sheet.nrows): #第1行是Titile，从第2行开始
-			if sheet.row_values(i)[index] == sub_dt:
+			long_dt =sheet.row_values(i)[index]
+			if long_dt.split('-')[0] ==sub_dt:
 				for j in range(sheet.ncols):
 					sheet_subdt.write(row_i,j,sheet.row_values(i)[j])
 				row_i=row_i+1
-			
+	print('success! check the file result-split.xls')
 	wb_result.save('result-split.xls')
 		
 			
 	 
 def main():
-	parser = OptionParser(description="Query the stock's value.", usage="%prog [-f]", version="%prog 1.0")
+	parser = OptionParser(description="Split the excel data.", usage="%prog [-f]", version="%prog 1.0")
 	parser.add_option('-f', '--filename', dest='filename',
                       help="the filename that you need to split.")
 	options, args = parser.parse_args(args=sys.argv[1:])
